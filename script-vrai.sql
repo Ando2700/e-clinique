@@ -20,7 +20,13 @@ INNER JOIN detailfactures d ON f.id = d.facture_id
 INNER JOIN actes a ON d.acte_id=a.id;
 
 CREATE OR REPLACE VIEW v_detail_facture AS 
-SELECT f.date_facture, d.montant, a.type_acte, a.reference, a.budget, a.annee FROM patients p
+SELECT 
+    f.date_facture,
+    d.montant, 
+    a.type_acte, 
+    a.reference, 
+    round((a.budget/12), 2) as budget_mensuel 
+FROM patients p
 INNER JOIN factures f ON p.id = f.patient_id
 INNER JOIN detailfactures d ON f.id = d.facture_id
 INNER JOIN actes a ON d.acte_id=a.id;
@@ -28,38 +34,43 @@ INNER JOIN actes a ON d.acte_id=a.id;
 CREATE OR REPLACE VIEW v_recette AS
 SELECT
     EXTRACT(MONTH FROM date_facture) AS mois,
+    EXTRACT(YEAR FROM date_facture) AS annee,
     type_acte,
-    budget,
-    annee,
+    budget_mensuel,
     round(sum(montant)) AS montant_total,
-    round(sum(montant/budget)*100) AS realisation
+    round(sum(montant/budget_mensuel)*100) AS realisation
 FROM 
     v_detail_facture
-GROUP BY mois, type_acte, budget, annee
-ORDER BY mois, type_acte, budget, annee;
+GROUP BY mois, annee, type_acte, budget_mensuel
+ORDER BY mois, annee, type_acte, budget_mensuel;
 
 CREATE VIEW v_charge AS
 SELECT id, montant_depense, depense_id,
     TO_DATE(CONCAT(jour, '-', mois, '-', annee), 'DD-MM-YYY') AS date
 FROM charges;
 
-CREATE VIEW charge_depense AS
-select c.montant_depense, c.date, d.type_depense, d.reference, d.budget, d.annee
-from v_charge c inner join 
-depenses d on c.depense_id = d.id; 
+CREATE OR REPLACE VIEW charge_depense AS
+SELECT 
+    c.montant_depense, 
+    c.date, 
+    d.type_depense, 
+    d.reference, 
+    round((d.budget/12), 2) as budget_mensuel 
+FROM v_charge c INNER JOIN 
+depenses d ON c.depense_id = d.id; 
 
 CREATE OR REPLACE VIEW v_depense AS
 SELECT
     EXTRACT(MONTH FROM date) AS mois,
+    EXTRACT(YEAR FROM date) AS annee,
     type_depense,
-    budget,
-    annee,
+    budget_mensuel,
     round(sum(montant_depense)) AS montant_total,
-    round(sum(montant_depense/budget)*100) AS realisation
+    round(sum(montant_depense/budget_mensuel)*100) AS realisation
 FROM 
     charge_depense
-GROUP BY mois, type_depense, budget, annee
-ORDER BY mois, type_depense, budget, annee;
+GROUP BY mois, type_depense, budget_mensuel, annee
+ORDER BY mois, type_depense, budget_mensuel, annee;
 
 CREATE OR REPLACE VIEW v_montant_total AS
 SELECT  sum(montant) as montant_total, facture_id FROM detailfactures GROUP BY facture_id;

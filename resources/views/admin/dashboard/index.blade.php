@@ -33,17 +33,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($recettes as $recette)
+                                    @foreach ($recettes as $recette)
                                     <tr>
                                         <td>{{ $recette->type_acte }}</td>
-                                        <td>{{ $recette->montant_total }}</td>
-                                        <td>{{ $recette->budget }}</td>
+                                        <td>{{ number_format(($recette->montant_total), '2') }}</td>
+                                        <td>{{ number_format(($recette->budget_mensuel), '2') }}</td>
                                         <td>{{ $recette->realisation }} % </td>
                                     </tr>
-                                    @empty
-                                        Recette vide.
-                                    @endforelse
-
+                                    @endforeach
                                     <tr>
                                         <td></td>
                                         <td><strong>{{ $sommeacte }}</strong></td>
@@ -72,8 +69,8 @@
                                     @forelse ($depenses as $depense)
                                     <tr>
                                         <td>{{ $depense->type_depense }}</td>
-                                        <td>{{ $depense->montant_total }}</td>
-                                        <td>{{ $depense->budget }}</td>
+                                        <td>{{ number_format(($depense->montant_total), '2') }}</td>
+                                        <td>{{ number_format(($depense->budget_mensuel), '2') }}</td>
                                         <td>{{ $depense->realisation }} % </td>
                                     </tr>
                                     @empty
@@ -109,15 +106,15 @@
                                 <tbody>
                                     <tr>
                                         <td>Recette</td>
-                                        <td>{{ $sommeacte }}</td>
-                                        <td>{{ $sommebudget }}</td>
-                                        <td>{{ number_format($totalrealisation, '2', ',', ' ') }} %</td>
+                                        <td>{{ number_format($sommebudget, '2') }} </td>
+                                        <td>{{ number_format($sommeacte, '2') }} </td>
+                                        <td>{{ number_format($totalrealisation) }} %</td>
                                     </tr>
                                     <tr>
                                         <td>Depense</td>
-                                        <td>{{ $sommedepense }}</td>
-                                        <td>{{ $sommebudgetdepense }}</td>
-                                        <td>{{ number_format($totalrealisationdepense, '2', ',', ' ') }} %</td>
+                                        <td>{{ number_format($sommedepense, '2') }}</td>
+                                        <td>{{ number_format($sommebudgetdepense, '2') }}</td>
+                                        <td>{{ number_format($totalrealisationdepense) }} %</td>
                                     </tr>
                                     <tr>
                                         <td></td>

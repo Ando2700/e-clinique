@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Log;
 use App\Models\Charge;
 use App\Models\Depense;
 use Illuminate\Http\Request;
@@ -48,16 +49,28 @@ class ChargeController extends Controller
         $depenseId = $depense->id;
 
         foreach($request->input('mois') as $mois){
+            // try{
+                
+            // } catch(\Exception $e) {
+            //     return redirect()->back();
+            // }
+            
             $charge = new Charge;
             $charge->depense_id = $depenseId;
             $charge->jour = $request->input('jour');
             $charge->mois = $mois;
+            if($mois==2 && $charge->jour>28){
+                return redirect()->back()->with('error', 'Must not be greater than 28');
+            }
+            if(($mois==4 && $charge->jour>30) || ($mois==6 && $charge->jour>30) || ($mois==9 && $charge->jour>30) || ($mois==11 && $charge->jour>30)){
+                return redirect()->back()->with('error', 'Must not be greater than 30');
+            }
             $charge->annee = $request->input('annee');
             $charge->montant_depense = $request->input('montant_depense');
             $charge->save();
         }
         
-        return redirect()->back()->withErrors('Reussi');
+        return redirect()->back()->with('Success', 'Insertion reussie');
         }
 
     }

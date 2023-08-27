@@ -13,100 +13,125 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        // $mois = $request->mois;
-        // $annee = $request->annee;
-        // $recettes = DB::table('v_recette')
-        // ->select('*')
-        // ->where('mois', '=', $mois)
-        // ->where('annee', '=', $annee)->get();
-        // $sommeacte = DB::table('v_recette')->sum('montant_total');
-        // $sommebudget = DB::table('v_recette')->sum('budget');
-        // $totalrealisation = ($sommeacte*100)/$sommebudget; 
+        $mois = $request->mois;
+        $annee = $request->annee;
+        // recettes
+        $recettes = DB::table('v_recette')->get();
+        // reel
+        $sommeacte = DB::table('v_recette')->sum('montant_total');
+        // budget
+        $sommebudget = DB::table('v_recette')->sum('budget_mensuel');
+        // realisation recette
+        $totalrealisation = ($sommeacte*100)/($sommebudget); 
+        
+        // depenses
+        $depenses = DB::table('v_depense')->get();
+        // reel depense
+        $sommedepense = DB::table('v_depense')->sum('montant_total');
+        // budget depense
+        $sommebudgetdepense = DB::table('v_depense')->sum('budget_mensuel');
+        // realisation depense
+        $totalrealisationdepense = ($sommedepense*100)/($sommebudgetdepense);
 
-        // $depenses = DB::table('v_depense')->get();
-        // $sommedepense = DB::table('v_depense')->sum('montant_total');
-        // $sommebudgetdepense = DB::table('v_depense')->sum('budget');
-        // $totalrealisationdepense = ($sommedepense*100)/$sommebudgetdepense;
+        $beneficesomme = $sommeacte-$sommedepense;
+        $beneficebudget = $sommebudget-$sommebudgetdepense;
+        $benefice = ($totalrealisationdepense*100)/$totalrealisation;
+        return view('admin.dashboard.index', compact(
+            'recettes', 
+            'sommeacte', 
+            'sommebudget', 
+            'totalrealisation',
 
-        // $beneficesomme = $sommeacte-$sommedepense;
-        // $beneficebudget = $sommebudget-$sommebudgetdepense;
-        // $benefice = ($totalrealisationdepense*100)/$totalrealisation;
-    }
+            'depenses',
+            'sommedepense',
+            'sommebudgetdepense',
+            'totalrealisationdepense',
 
-    public function tableau(Request $request)
-    {
+            'beneficesomme',
+            'beneficebudget',
+            'benefice',
+        ));    }
 
+    public function tableau(Request $request){
+        
         $mois = $request->mois;
         $annee = $request->annee;
 
         // recette
         $recettes = DB::table('v_recette')
-            ->select('*')
-            ->where('mois', '=', $mois)
-            ->where('annee', '=', $annee)->get();
+        ->select('*')
+        ->where('mois', '=', $mois)
+        ->where('annee', '=', $annee)->get();
+        // reel recette
         $sommeacte = DB::table('v_recette')
             ->where('mois', $mois)
             ->where('annee', $annee)
             ->sum('montant_total');
+        // budget recette        
         $sommebudget = DB::table('v_recette')
             ->where('mois', $mois)
             ->where('annee', $annee)
-            ->sum('budget');
-        if ($sommebudget == 0) {
-            $sommebudget++;
-        } else {
-            $sommebudget;
+            ->sum('budget_mensuel');
+        // realisation recette
+        if($sommebudget==0){
+            $totalrealisation=0;
+        } else{
+            $totalrealisation = ($sommeacte*100)/($sommebudget); 
         }
-        $totalrealisation = ($sommeacte * 100) / $sommebudget;
-
+        
         // depense
         $depenses = DB::table('v_depense')
-            ->select('*')
-            ->where('mois', '=', $mois)
-            ->where('annee', '=', $annee)->get();
+        ->select('*')
+        ->where('mois', '=', $mois)
+        ->where('annee', '=', $annee)->get();
+        // reel depense
         $sommedepense = DB::table('v_depense')
             ->where('mois', $mois)
             ->where('annee', $annee)
-            ->sum('montant_total');
+            ->sum('montant_total'); 
+        // budget depense        
         $sommebudgetdepense = DB::table('v_depense')
             ->where('mois', $mois)
             ->where('annee', $annee)
-            ->sum('budget');
-        if ($sommebudgetdepense == 0) {
-            $sommebudgetdepense++;
-        } else {
-            $sommebudgetdepense;
+            ->sum('budget_mensuel');         
+        // realisation depense
+        if($sommebudgetdepense==0){
+            $totalrealisationdepense=0;
+        } else{
+            $totalrealisationdepense = ($sommedepense*100)/($sommebudgetdepense); 
         }
-        $totalrealisationdepense = ($sommedepense * 100) / $sommebudgetdepense;
+        // $totalrealisationdepense = ($sommedepense*100)/$sommebudgetdepense;
+        
 
         // Benefice
-        $beneficesomme = $sommeacte - $sommedepense;
-        $beneficebudget = $sommebudget - $sommebudgetdepense;
-        if ($totalrealisation == 0) {
-            $totalrealisation++;
+        $beneficesomme = $sommeacte-$sommedepense;
+        $beneficebudget = $sommebudget-$sommebudgetdepense;
+        if($totalrealisation==0){
+            $benefice=0;
         } else {
-            $totalrealisation;
+            $benefice = ($totalrealisationdepense*100)/$totalrealisation;
         }
-        $benefice = ($totalrealisationdepense * 100) / $totalrealisation;
         // if(($sommebudget == 0) || () )
         // if($beneficesomme < 0){
         //     $beneficesomme = 1;
         // }else{$beneficesomme;}
 
-        if ($benefice > 100) {
+        if($benefice > 100)
+        {
             $benefice = 100;
-        } else {
+        }
+        else{
             $benefice = $benefice;
         }
-        if (($beneficesomme < 0) || ($beneficebudget <= 0)) {
+        if(($beneficesomme <0) || ($beneficebudget<=0)){
             $benefice = 0;
         }
-
+        
 
         return view('admin.dashboard.index', compact(
-            'recettes',
-            'sommeacte',
-            'sommebudget',
+            'recettes', 
+            'sommeacte', 
+            'sommebudget', 
             'totalrealisation',
 
             'depenses',

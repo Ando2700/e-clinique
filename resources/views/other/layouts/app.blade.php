@@ -25,6 +25,11 @@
 </head>
 
 <body class="sb-nav-fixed">
+    @if (session('error'))
+        <script>
+            alert("{{ session('error') }}");
+        </script>
+    @endif
     <?php
     use Carbon\carbon;
     ?>
@@ -160,6 +165,8 @@
         </div>
         <div id="layoutSidenav_content">
             <main>
+
+
                 {{-- @include('partials.navbar') --}}
                 @yield('content')
             </main>
